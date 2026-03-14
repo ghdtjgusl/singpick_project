@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sing Pick Booth</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f5f5f5;
+}
+
+.top-bar {
+  height: 70px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 20px;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.logo {
+  font-family: 'Montserrat', 'Pretendard', sans-serif;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+}
+
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.search {
+  margin: 15px;
+  padding: 15px;
+  font-size: 18px;
+  width: calc(100% - 30px);
+}
+
+.song-list {
+  height: calc(100vh - 170px);
+  overflow-y: auto;
+  padding: 0 15px;
+}
+
+.song {
+  background: white;
+  padding: 20px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  font-size: 20px;
+}
+
+.mic {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 32px;
+  background: #ff0000;
+  color: white;
+  border: none;
+  display: none;
+}
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  padding: 20px;
+  display: none;
+}
+.overlay h2 {
+  margin-top: 0;
+}
+
+.reserve-item {
+  padding: 15px;
+  background: #f1f1f1;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+.bottom-btns {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.bottom-btns button {
+  width: 40%;
+  padding: 15px;
+  font-size: 18px;
+}
+
+/* 예약 버튼 영역 */
+.reserve-buttons {
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+/* 공통 버튼 스타일 */
+.btn {
+  width: 45%;
+  padding: 18px 0;
+  font-size: 22px;
+  border-radius: 14px;
+  border: none;
+  font-weight: bold;
+  transition: all 0.15s ease;
+}
+
+/* 뒤로 버튼 */
+.btn.back {
+  background: #ddd;
+  color: #333;
+}
+
+/* 시작 버튼 */
+.btn.start {
+  background: #ff4d6d;
+  color: white;
+}
+
+/* 눌렀을 때 효과 */
+.btn:active {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="main">
+  <div class="top-bar">
+    <div>ID: user123</div>
+
+    <div class="logo">Sing Pick</div>
+
+    <div class="right">
+      <span id="count">(0 / 3곡)</span>
+    </div>
+  </div>
+
+  <input
+    class="search"
+    id="searchInput"
+    placeholder="노래 제목 또는 가수 검색"
+    oninput="filterSongs()"
+  >
+
+  <div class="song-list" id="songList"></div>
+</div>
+
+<button class="mic" id="micBtn">🎤</button>
+
+  <div class="overlay" id="reserveScreen">
+    <h2>예약한 곡</h2>
+    <div id="reserveList"></div>
+    <div class="reserve-buttons">
+    <button class="btn back" onclick="closeReserve()">뒤로</button>
+    <button class="btn start" onclick="startSong()">시작</button>
+    </div>
+  </div>
+  
+
+<!-- 🎤 노래 재생 화면 -->
+<div id="playScreen" class="overlay" style="display:none; text-align:center;">
+  <h1 id="songTitle"></h1>
+  <div id="countdown" style="font-size:40px; margin-top:40px;"></div>
+  <div id="lyrics"
+       style="font-size:32px; margin-top:60px; font-weight:bold;">
+    가사 표시
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+ 
+let currentIndex = 0;
+let currentSong = null;
+
+/* ================= 🎵 노래 데이터 (여기에!) ================= */
+const songData = {
+  "0+0 | 한로로": {
+    audio: "0+0.m4a",
+    lyrics: [
+      { time: 12, text: "3" },
+      { time: 13, text: "2" },
+      { time: 14, text: "1" },
+      { time: 15, text: "검은 눈동자의 사각지대를 찾으러 가자" },
+      { time: 27, text: "여름 코코아, 겨울 수박도" },
+      { time: 34, text: "혼나지 않는 파라다이스" },
+      { time: 43, text: "앞서가는 너의 머리가" },
+      { time: 50, text: "두 볼을 간지럽힐 때" },
+      { time: 52, text: "나의 내일이 뛰어오네" },
+      { time: 57, text: "난 널 버리지 않아" },
+      { time: 64, text: "너도 같은 생각이지?" },
+      { time: 72, text: "저 너머의 우리는 결코 우리가 될 수 없단다" },
+      { time: 86, text: "영생과 영면의 차이를 너는 알고 있니?" },
+      { time: 98, text: "멍든 발목을 꺾으려 해도" },
+      { time: 105, text: "망설임 없이 태어나는 꿈" },
+      { time: 117, text: "난 널 버리지 않아" },
+      { time: 123, text: "너도 같은 생각이지?" },
+      { time: 131, text: "저 너머의 우리는 결코 우리가 될 수 없단다" },
+      { time: 144, text: "아, 난 널 버리지 않아" },
+      { time: 152, text: "너도 같은 생각이지?" },
+      { time: 160, text: "난 우리를 영영 잃지 않아" },
+      { time: 166, text: "너도 영영 그럴 거지?" },
+      { time: 174, text: " " }
+    ]
+  }, 
+  "한숨 | 이하이": {
+    audio: "여름밤에 우리.m4a",
+    lyrics: [
+      { time: 14, text: "3" },
+      { time: 15, text: "2" },
+      { time: 16, text: "1" },
+      { time: 32, text: "숨을 크게 쉬어봐요" },
+      { time: 35, text: "당신의 가슴 양쪽이 저리게" },
+      { time: 38, text: "조금은 아파올 때까지" },
+      { time: 40, text: "숨을 더 뱉어봐요" },
+      { time: 43, text: "당신의 안에 남은 게 없다고" },
+      { time: 46, text: "느껴질 때까지" },
+      { time: 49, text: "숨이 벅차올라도 괜찮아요" },
+      { time: 50, text: "아무도 그댈 탓하진 않아" },
+      { time: 53, text: "가끔은 실수해도 돼" },
+      { time: 56, text: "누구든 그랬으니까" },
+      { time: 59, text: "괜찮다는 말" },
+      { time: 60, text: "말뿐인 위로지만" },
+      { time: 63, text: "누군가의 한숨" },
+      { time: 66, text: "그 무거운 숨을" },
+      { time: 69, text: "내가 어떻게" },
+      { time: 70, text: "헤아릴 수가 있을까요" },
+      { time: 73, text: "당신의 한숨" },
+      { time: 76, text: "그 깊일 이해할 순 없겠지만" },
+      { time: 79, text: "괜찮아요" },
+      { time: 80, text: "내가 안아줄게요" },
+      { time: 83, text: "숨이 벅차올라도 괜찮아요" },
+      { time: 86, text: "아무도 그댈 탓하진 않아" },
+      { time: 89, text: "가끔은 실수해도 돼" },
+      { time: 90, text: "누구든 그랬으니까" },
+      { time: 93, text: "괜찮다는 말" },
+      { time: 96, text: "말뿐인 위로지만" },
+      { time: 99, text: "누군가의 한숨" },
+      { time: 100, text: "그 무거운 숨을" },
+      { time: 103, text: "내가 어떻게" },
+      { time: 132, text: "헤아릴 수가 있을까요" },
+      { time: 142, text: "당신의 한숨" },
+      { time: 146, text: "그 깊일 이해할 순 없겠지만" },
+      { time: 149, text: "괜찮아요" },
+      { time: 150, text: "내가 안아줄게요" },
+      { time: 32, text: "남들 눈엔 힘 빠지는" },
+      { time: 32, text: "한숨으로 보일진 몰라도" },
+      { time: 32, text: "나는 알고 있죠" },
+      { time: 32, text: "작은 한숨 내뱉기도" },
+      { time: 32, text: "어려운 하루를 보냈단 걸" },
+      { time: 32, text: "이제 다른 생각은 마요" },
+      { time: 32, text: "깊이 숨을 쉬어봐요" },
+      { time: 32, text: "그대로 내뱉어요" },
+      { time: 32, text: "누군가의 한숨" },
+      { time: 32, text: "그 무거운 숨을" },
+      { time: 32, text: "내가 어떻게" },
+      { time: 32, text: "헤아릴 수가 있을까요" },
+      { time: 32, text: "당신의 한숨" },
+      { time: 32, text: "그 깊일 이해할 순 없겠지만" },
+      { time: 32, text: "괜찮아요" },
+      { time: 32, text: "내가 안아줄게요" },
+      { time: 32, text: "정말 수고했어요" }
+    ]
+  },
+  "여름밤에 우리 | 전진희(feat. wave to earth)": {
+    audio: "여름밤에 우리.m4a",
+    lyrics: [
+      { time: 15, text: "3" },
+      { time: 16, text: "2" },
+      { time: 17, text: "1" },
+      { time: 18, text: "오랜만에 너를 만나 얘길 나누니" },
+      { time: 25, text: "어느새 다 커버린 모습이 보여" },
+      { time: 33, text: "태양처럼 뜨거웠던 우리 마음은" },
+      { time: 39, text: "무엇이 지치게 했나" },
+      { time: 48, text: "어두운 밤 초록 나무 아래 그림자" },
+      { time: 55, text: "한 손엔 차가운 맥주 한 캔 들고서" },
+      { time: 63, text: "꿈결처럼 펼쳐질 내일을 그리며" },
+      { time: 70, text: "마주 보고 웃던 너와 나" },
+      { time: 77, text: "이 여름밤에 우리" },
+      { time: 81, text: "흩어진 꿈을 찾아" },
+      { time: 85, text: "다시 한번 별빛 속을 달려보는 거야" },
+      { time: 93, text: "영원속에 언젠가 다 사라진 대도" },
+      { time: 100, text: "오늘 밤은" },
+      { time: 100, text: "이 여름밤에 우리" },
+      { time: 100, text: "어디든 상관없이" },
+      { time: 100, text: "너와 함께 걷는 지금이 영원인 거야" },
+      { time: 100, text: "두려움은 마주친 눈빛 뒤로 안녕" },
+      { time: 100, text: "안녕" },
+      { time: 100, text: "후, 가끔 불어오는 바람은" },
+      { time: 100, text: "멈춘 내 마음에 손을 내밀어" },
+      { time: 100, text: "후, 묻어뒀던 작은 욕심들" },
+      { time: 100, text: "다시 꺼내봐도 괜찮은 걸까" },
+      { time: 100, text: "이 여름밤에 우리" },
+      { time: 100, text: "흩어진 꿈을 찾아" },
+      { time: 100, text: "다시 한번 별빛 속을 달려보는 거야" },
+      { time: 100, text: "영원속에 언젠가 다 사라진 대도" },
+      { time: 100, text: "오늘 밤은" },
+      { time: 100, text: "이 여름밤에 우리" },
+      { time: 100, text: "어디든 상관없이" },
+      { time: 100, text: "너와 함께 걷는 지금이 영원인 거야" },
+      { time: 100, text: "두려움은 마주친 눈빛 뒤로 안녕" },
+      { time: 100, text: "안녕" }
+
+    ]
+  }
+};
+
+/* ================= 기본 설정 ================= */
+const MAX = 3;
+let selected = [];
+
+const allSongs = [
+  "여름밤에 우리 | 전진희(feat. wave to earth)",
+  "한숨 | 이하이",
+  "0+0 | 한로로"
+];
+
+const songList = document.getElementById("songList");
+const countText = document.getElementById("count");
+const micBtn = document.getElementById("micBtn");
+const reserveScreen = document.getElementById("reserveScreen");
+const reserveList = document.getElementById("reserveList");
+const audio = document.getElementById("audio");
+
+/* ================= 🎵 노래 목록 (백엔드 구조 맞춤) ================= */
+async function filterSongs() {
+  const keyword = document.getElementById("searchInput").value.trim();
+  const songList = document.getElementById("songList");
+
+  if (keyword === "") {
+    songList.innerHTML = "";
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://127.0.0.1:8000/library/search?keyword=${keyword}`);
+    
+    // [수정 포인트] 백엔드가 {"count": n, "results": [...]} 로 주므로 results를 가져와야 함
+    const songsFromDB = response.data.results; 
+
+    songList.innerHTML = ""; 
+
+    if (!songsFromDB || songsFromDB.length === 0) {
+        songList.innerHTML = "<div class='song'>검색 결과가 없습니다.</div>";
+        return;
+    }
+
+    songsFromDB.forEach(song => {
+      const div = document.createElement("div");
+      div.className = "song";
+      
+      const songName = `${song.title} | ${song.singer}`;
+      div.innerText = songName;
+
+      div.onclick = () => {
+        if (selected.length >= MAX) return alert("곡 선택이 완료되었습니다.");
+        if (selected.includes(songName)) return alert("이미 선택된 곡입니다.");
+
+        if (!songData[songName]) {
+            alert("음원 데이터가 없는 곡입니다.");
+            return;
+        }
+
+        if (confirm(`'${songName}'을 예약하시겠습니까?`)) {
+          selected.push(songName);
+          
+          // [수정] 쿼리 파라미터(params) 방식으로 예약 데이터 전송
+          axios.post('http://127.0.0.1:8000/library/reserve', null, {
+            params: {
+              booth_id: 1,
+              tj_number: song.tj_number
+            }
+          })
+          .then(res => {
+            console.log("예약 성공:", res.data);
+          })
+          .catch(err => {
+            console.error("예약 실패:", err.response?.data || err.message);
+          });
+
+          updateUI();
+        }
+      };
+      songList.appendChild(div);
+    });
+  } catch (error) {
+    console.error("검색 실패:", error);
+  }
+}
+
+/* ================= UI ================= */
+function updateUI() {
+  countText.innerText = `(${selected.length} / ${MAX}곡)`;
+  if (selected.length === MAX) micBtn.style.display = "block";
+}
+
+micBtn.onclick = () => {
+  reserveList.innerHTML = "";
+  selected.forEach(s => {
+    const div = document.createElement("div");
+    div.className = "reserve-item";
+    div.innerText = s;
+    reserveList.appendChild(div);
+  });
+  reserveScreen.style.display = "block";
+};
+
+function closeReserve() {
+  reserveScreen.style.display = "none";
+}
+function startSong() {
+  if (selected.length === 0) {
+    alert("노래를 먼저 예약해주세요!");
+    return;
+  }
+
+  currentIndex = 0;
+  reserveScreen.style.display = "none";
+  playSong(currentIndex);
+}
+
+
+/* ================= 🎶 노래 재생 ================= */
+function playSong(index) {
+  const songName = selected[index];
+  const data = songData[songName];
+
+  if (!data) {
+    alert("아직 준비되지 않은 노래예요!");
+    return;
+  }
+
+  document.getElementById("playScreen").style.display = "block";
+  document.getElementById("songTitle").innerText = songName;
+
+  const countdownEl = document.getElementById("countdown");
+  const lyricsBox = document.getElementById("lyrics");
+
+  countdownEl.innerText = "";   // 카운트 영역 비우기
+  lyricsBox.innerText = "";
+
+  // ▶ 바로 재생
+  audio.src = data.audio;
+  audio.play();
+
+  // 🎵 가사 싱크
+  audio.ontimeupdate = () => {
+    const current = audio.currentTime;
+    for (let i = data.lyrics.length - 1; i >= 0; i--) {
+      if (current >= data.lyrics[i].time) {
+        lyricsBox.innerText = data.lyrics[i].text;
+        break;
+      }
+    }
+  };
+
+  // 🎶 곡 끝나면 다음 곡 대기
+  audio.onended = () => {
+    showNextCountdown();
+  };
+}
+
+
+function showNextCountdown() {
+  const countdownEl = document.getElementById("countdown");
+  const lyricsBox = document.getElementById("lyrics");
+
+  // 🔥 마지막 곡이면 바로 종료 메시지
+  if (currentIndex >= selected.length - 1) {
+    lyricsBox.innerText = "";
+    countdownEl.innerText = "사용자의 노래를 분석 중입니다.";
+    return;
+  }
+
+  // 아직 다음 곡이 남아있을 때만 10초 카운트
+  let wait = 10;
+  lyricsBox.innerText = "";
+  countdownEl.innerText = `다음 곡 재생까지 ${wait}초`;
+
+  const waitTimer = setInterval(() => {
+    wait--;
+
+    if (wait === 0) {
+      clearInterval(waitTimer);
+      currentIndex++;
+      playSong(currentIndex);
+    } else {
+      countdownEl.innerText = `다음 곡 재생까지 ${wait}초`;
+    }
+  }, 1000);
+}
+
+
+
+renderSongs(allSongs);
+function renderSongs(list) { }
+</script>
+
+</body>
+</html>

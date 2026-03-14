@@ -1,0 +1,170 @@
+[
+    {
+        "voice_name": "voice1_mrX",
+        "scores": {
+            "pitch": 70.6,
+            "tempo": 100.0,
+            "volume": 75
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 309.39,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.0763
+        },
+        "feedback": "전반적으로 음정은 무난합니다. 박자를 정확하게 잘 지켰습니다. 안정적인 성량으로 잘 불렀습니다.",
+        "recommendations": [
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.9968
+            },
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9961
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.9959
+            }
+        ]
+    },
+    {
+        "voice_name": "voice2_mr",
+        "scores": {
+            "pitch": 38.1,
+            "tempo": 100.0,
+            "volume": 75
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 325.63,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.0636
+        },
+        "feedback": "음정 기복이 있어 연습이 필요합니다. 박자를 정확하게 잘 지켰습니다. 안정적인 성량으로 잘 불렀습니다.",
+        "recommendations": [
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.997
+            },
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9961
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.996
+            }
+        ]
+    },
+    {
+        "voice_name": "voice3_slow",
+        "scores": {
+            "pitch": 0,
+            "tempo": 100.0,
+            "volume": 40
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 227.55,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.0223
+        },
+        "feedback": "음정 기복이 있어 연습이 필요합니다. 박자를 정확하게 잘 지켰습니다. 조금 더 자신 있게 소리를 내도 좋겠습니다.",
+        "recommendations": [
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9974
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.9971
+            },
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.9959
+            }
+        ]
+    },
+    {
+        "voice_name": "voice4_fast",
+        "scores": {
+            "pitch": 55.4,
+            "tempo": 100.0,
+            "volume": 60
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 316.98,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.046
+        },
+        "feedback": "음정 기복이 있어 연습이 필요합니다. 박자를 정확하게 잘 지켰습니다. 조금 더 자신 있게 소리를 내도 좋겠습니다.",
+        "recommendations": [
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.9992
+            },
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9822
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.9812
+            }
+        ]
+    },
+    {
+        "voice_name": "voice5_small",
+        "scores": {
+            "pitch": 97.1,
+            "tempo": 100.0,
+            "volume": 40
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 293.23,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.0276
+        },
+        "feedback": "음정이 매우 안정적입니다. 박자를 정확하게 잘 지켰습니다. 조금 더 자신 있게 소리를 내도 좋겠습니다.",
+        "recommendations": [
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.9978
+            },
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9946
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.9945
+            }
+        ]
+    },
+    {
+        "voice_name": "voice6_big",
+        "scores": {
+            "pitch": 94.8,
+            "tempo": 100.0,
+            "volume": 90
+        },
+        "analysis_values": {
+            "pitch_hz_avg": 292.07,
+            "tempo_bpm": 129.2,
+            "volume_rms_avg": 0.0914
+        },
+        "feedback": "음정이 매우 안정적입니다. 박자를 정확하게 잘 지켰습니다. 성량이 충분하고 힘 있는 발성입니다.",
+        "recommendations": [
+            {
+                "singer": "Taeyeon",
+                "similarity": 0.9985
+            },
+            {
+                "singer": "KimNaYoung",
+                "similarity": 0.9791
+            },
+            {
+                "singer": "ChoiYuri",
+                "similarity": 0.9786
+            }
+        ]
+    }
+]
