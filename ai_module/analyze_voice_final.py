@@ -6,21 +6,17 @@ os.environ["TORCHAUDIO_USE_BACKEND_DISPATCHER"] = "0"
 import subprocess
 import json
 
-try:
-    from .extract_basic_features import extract_single_wav
-    from .analyze_voice import analyze_voice
-    from .similarity_engine import recommend_singers
-except ImportError:
-    from extract_basic_features import extract_single_wav
-    from analyze_voice import analyze_voice
-    from similarity_engine import recommend_singers
+from .extract_basic_features import extract_single_wav
+from .analyze_voice import analyze_voice
+from .similarity_engine import recommend_singers
+
 
 def analyzeVoice(wav_path, reference_song, user_bpm, top_n=3):
     # 1. 경로 설정 (OneDrive 한글 경로 완벽 대응을 위한 절대 경로화)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # 서버 루트에 있는 uploaded_files 폴더 내의 파일을 가리킴
-    abs_wav_path = os.path.abspath(wav_path) 
-    
+    abs_wav_path = os.path.abspath(wav_path)
+
     if not os.path.exists(abs_wav_path):
         return {"error": f"원본 파일을 찾을 수 없습니다: {abs_wav_path}"}
 
